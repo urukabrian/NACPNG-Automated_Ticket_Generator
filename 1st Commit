@@ -1,0 +1,65 @@
+import csv
+import smtplib
+import ssl
+from time import sleep
+
+port = input("Enter Server Port Number:")  # For starttls
+smtp_server = input("Enter Server Address:") # For SMTP Server
+receiver_email = input("Enter Receiver Email Address:")
+sender_email = input("Enter Sender Email Address:")
+password = input("Enter Sender Email Password:")
+
+message = """\
+Subject: {subject}
+
+
+{issue}
+
+
+
+
+{details}
+
+
+
+
+
+
+
+
+
+
+
+#add {time}min
+#assign {assign}
+#category {category}
+#{status}
+"""
+
+update = """\
+Ticket Processed for the issue: {subject}
+"""
+
+context = ssl.create_default_context()
+with open("tasking.csv") as file:
+    reader = csv.reader(file)
+    next(reader)  # Skip header row
+    count = 0
+    for subject, issue, details, time, assign, category, status in reader:
+        count+= 1
+        print(update.format(subject=(''.join(str(elt) for elt in subject)),issue=(''.join(str(elt) for elt in issue)),details=(''.join(str(elt) for elt in details)),time=(''.join(str(elt) for elt in time)),assign=(''.join(str(elt) for elt in assign)),category=(''.join(str(elt) for elt in category)),status=(''.join(str(elt) for elt in status))))
+        print(count)
+        with smtplib.SMTP(smtp_server, port) as server:
+            server.ehlo()  # Can be omitted
+            server.starttls(context=context)
+            server.ehlo()  # Can be omitted
+            server.login(user, password)
+            server.sendmail(
+            sender_email,
+            receiver_email,
+            message.format(subject=(''.join(str(elt) for elt in subject)),issue=(''.join(str(elt) for elt in issue)),details=(''.join(str(elt) for elt in details)),time=(''.join(str(elt) for elt in time)),assign=(''.join(str(elt) for elt in assign)),category=(''.join(str(elt) for elt in category)),status=(''.join(str(elt) for elt in status)))
+            #message.format(issue=(','.join(str(elt) for elt in issue)),subject=(','.join(str(elt) for elt in subject)),details=(','.join(str(elt) for elt in details)),time=(','.join(str(elt) for elt in time)),assign=(','.join(str(elt) for elt in assign)),category=(','.join(str(elt) for elt in category)))
+            )
+            server.quit()
+        sleep(15)
+
